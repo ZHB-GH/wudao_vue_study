@@ -6,6 +6,11 @@ import axios from 'axios'
 import TreeTable from 'vue-table-with-tree-grid'
 import VueQuillEditor from 'vue-quill-editor'
 
+
+// 进度条插件
+import Nprogress from 'nprogress'
+import 'nprogress/nprogress.css'
+
 import 'quill/dist/quill.core.css' // import styles
 import 'quill/dist/quill.snow.css' // for snow theme
 import 'quill/dist/quill.bubble.css' // for bubble theme
@@ -22,7 +27,13 @@ axios.defaults.baseURL = 'http://127.0.0.1:8888/api/private/v1/'
 Vue.prototype.$http = axios
 // 配置请求拦截器
 axios.interceptors.request.use(config => {
+  Nprogress.start()
   config.headers.Authorization = window.sessionStorage.getItem("token")
+  return config
+})
+
+axios.interceptors.response.use(config => {
+  Nprogress.done()
   return config
 })
 
