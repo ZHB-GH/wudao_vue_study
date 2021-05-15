@@ -15,7 +15,7 @@ module.exports = {
 
       config.plugin('html').tap(args => {
         args[0].isProd = true
-        return
+        return args
       })
     })
 
@@ -24,7 +24,7 @@ module.exports = {
 
       config.plugin('html').tap(args => {
         args[0].isProd = false
-        return
+        return args
       })
     })
   }
