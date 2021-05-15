@@ -23,6 +23,7 @@ const Cate = () => import('../components/goods/Cate.vue')
 const Params = () => import('../components/goods/Params.vue')
 const GoodsList = () => import('../components/goods/GoodsList.vue')
 const GoodsAdd = () => import('../components/goods/GoodsAdd.vue')
+const GoodsUpdate = () => import("../components/goods/GoodsUpdate.vue")
 const Order = () => import('../components/order/Order.vue')
 const Report = () => import('../components/report/Report.vue')
 
@@ -75,6 +76,10 @@ const routes = [
       {
         path: '/goods/Add',
         component: GoodsAdd
+      },
+      {
+        path: '/goods/update/:id',
+        component: GoodsUpdate
       },
       {
         path: '/orders',

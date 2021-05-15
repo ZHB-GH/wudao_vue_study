@@ -1,16 +1,15 @@
-<!-- goods add -->
 <template>
   <div>
     <!-- 面包屑导航 -->
     <el-breadcrumb separator-class="el-icon-arrow-right">
       <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
       <el-breadcrumb-item>商品管理</el-breadcrumb-item>
-      <el-breadcrumb-item>添加商品</el-breadcrumb-item>
+      <el-breadcrumb-item>修改商品</el-breadcrumb-item>
     </el-breadcrumb>
 
     <el-card>
-      <el-alert title="添加商品信息" type="info" center :closable="false" show-icon> </el-alert>
-
+      <el-alert title="修改商品信息" type="info" center :closable="false" show-icon> </el-alert>
+      <!-- 进度条 -->
       <el-steps :active="Number(activeIndex)" finish-status="success" align-center>
         <el-step title="基本信息"></el-step>
         <el-step title="商品参数"></el-step>
@@ -21,24 +20,23 @@
       </el-steps>
 
       <!-- tab -->
-
-      <el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="100px" label-position="top">
+      <el-form :model="updateForm" :rules="updateFormRules" ref="updateFormRef" label-width="100px" label-position="top">
         <el-tabs v-model="activeIndex" :tab-position="'left'" :before-leave="beforeLeaveTab" @tab-click="tabClicked">
           <el-tab-pane label="基本信息" name="0">
             <el-form-item label="商品名称" prop="goods_name">
-              <el-input v-model="addForm.goods_name"></el-input>
+              <el-input v-model="updateForm.goods_name"></el-input>
             </el-form-item>
             <el-form-item label="商品价格" prop="goods_price">
-              <el-input v-model="addForm.goods_price"></el-input>
+              <el-input v-model="updateForm.goods_price"></el-input>
             </el-form-item>
             <el-form-item label="商品重量" prop="goods_weight">
-              <el-input v-model="addForm.goods_weight"></el-input>
+              <el-input v-model="updateForm.goods_weight"></el-input>
             </el-form-item>
             <el-form-item label="商品数量" prop="goods_number">
-              <el-input v-model="addForm.goods_number"></el-input>
+              <el-input v-model="updateForm.goods_number"></el-input>
             </el-form-item>
             <el-form-item label="商品分类" prop="goods_cat">
-              <el-cascader v-model="addForm.goods_cat" :options="cateList" :props="cateProps" @change="handleChange"></el-cascader>
+              <el-cascader v-model="updateForm.goods_cat" :options="cateList" :props="cateProps" @change="handleChange"></el-cascader>
             </el-form-item>
           </el-tab-pane>
           <el-tab-pane label="商品参数" name="1">
@@ -54,13 +52,21 @@
             </el-form-item>
           </el-tab-pane>
           <el-tab-pane label="商品图片" name="3">
-            <el-upload :action="uploadURL" :on-preview="handlePreview" :on-remove="handleRemove" list-type="picture" :headers="headersObj" :on-success="handleSuccess">
+            <el-upload
+              :action="uploadURL"
+              :file-list="updateForm.pics.pics_sma"
+              :on-preview="handlePreview"
+              :on-remove="handleRemove"
+              list-type="picture"
+              :headers="headersObj"
+              :on-success="handleSuccess"
+            >
               <el-button size="small" type="primary">点击上传</el-button>
             </el-upload>
           </el-tab-pane>
           <el-tab-pane label="商品内容" name="4">
-            <quill-editor v-model="addForm.goods_introduce" />
-            <el-button type="primary" class="btnClass" @click="addGoods">添加商品</el-button>
+            <quill-editor v-model="updateForm.goods_introduce" />
+            <el-button type="primary" class="btnClass" @click="updateGoods">修改商品</el-button>
           </el-tab-pane>
         </el-tabs>
       </el-form>
@@ -77,12 +83,13 @@ import _ from 'lodash'
 
 export default {
   created() {
+    this.getGoodsInfo()
     this.getCateList()
   },
   data() {
     return {
       activeIndex: 0,
-      addForm: {
+      updateForm: {
         goods_name: '',
         goods_price: 0,
         goods_weight: 0,
@@ -92,7 +99,7 @@ export default {
         goods_introduce: '',
         attrs: [],
       },
-      addFormRules: {
+      updateFormRules: {
         goods_name: [{ required: true, message: '请输入商品名称', trigger: 'blur' }],
         goods_price: [{ required: true, message: '请输入商品价格', trigger: 'blur' }],
         goods_weight: [{ required: true, message: '请输入商品重量', trigger: 'blur' }],
@@ -118,13 +125,30 @@ export default {
   },
   computed: {
     cateId() {
-      if (this.addForm.goods_cat.length === 3) {
-        return this.addForm.goods_cat[this.addForm.goods_cat.length - 1]
+      if (this.updateForm.goods_cat.length === 3) {
+        return this.updateForm.goods_cat[this.updateForm.goods_cat.length - 1]
       }
       return null
     },
   },
   methods: {
+    async getGoodsInfo() {
+      const { data: res } = await this.$http.get(`goods/${this.$route.params.id}`)
+      if (res.meta.status !== 200) {
+        this.$message.error('获取商品信息失败')
+      }
+      console.log(res.data)
+      // 数据处理
+      res.data.goods_cat = res.data.goods_cat !== null && res.data.goods_cat.length > 0 ? res.data.goods_cat.split(',').map(Number) : []
+      const tmp = []
+      res.data.pics.forEach((item) => {
+        tmp.push({
+          url: item.pics_sma,
+        })
+      })
+      res.data.pics = tmp
+      this.updateForm = res.data
+    },
     async getCateList() {
       const { data: res } = await this.$http.get('categories')
       if (res.meta.status !== 200) {
@@ -133,13 +157,13 @@ export default {
       this.cateList = res.data
     },
     handleChange() {
-      if (this.addForm.goods_cat.length !== 3) {
-        this.addForm.goods_cat = []
+      if (this.updateForm.goods_cat.length !== 3) {
+        this.updateForm.goods_cat = []
         this.$message.warning('需要三级分类！')
       }
     },
     beforeLeaveTab(activeName, oldName) {
-      if (oldName === '0' && this.addForm.goods_cat.length !== 3) {
+      if (oldName === '0' && this.updateForm.goods_cat.length !== 3) {
         this.$message.error('请先选择商品分类')
         return false
       }
@@ -181,26 +205,25 @@ export default {
       // 找到临时图片的路径名称
       const tmpName = file.response.data.tmp_path
       // 数组查找对呀下标
-      const index = this.addForm.pics.findIndex((t) => {
+      const index = this.updateForm.pics.findIndex((t) => {
         t.tmp_path === tmpName
       })
       // 移除临时图片
-      this.addForm.pics.splice(index, 1)
-      console.log(this.addForm)
+      this.updateForm.pics.splice(index, 1)
+      console.log(this.updateForm)
     },
     handleSuccess(response) {
       const picInfo = { pic: response.data.tmp_path }
-      this.addForm.pics.push(picInfo)
+      this.updateForm.pics.push(picInfo)
     },
-    addGoods() {
-      this.$refs.addFormRef.validate(async (valid) => {
+    updateGoods() {
+      this.$refs.updateFormRef.validate(async (valid) => {
         if (!valid) {
           return this.$message.error('请填写必要的表单项')
         }
         // 拷贝对象避免数据处理出错
-        const form = _.cloneDeep(this.addForm)
+        const form = _.cloneDeep(this.updateForm)
         form.goods_cat = form.goods_cat.join(',')
-
         // 添加动态参数和静态属性
         this.manyTableList.forEach((item) => {
           const info = {
@@ -217,12 +240,21 @@ export default {
           }
           form.attrs.push(info)
         })
-
-        const { data: res } = await this.$http.post('goods', form)
-        if (res.meta.status !== 201) {
-          return this.$message.error('添加商品失败！')
+        console.log(form)
+        const { data: res } = await this.$http.put(`goods/${form.goods_id}`, {
+          goods_name: form.goods_name,
+          goods_cat: form.goods_cat,
+          goods_price: form.goods_price,
+          goods_number: form.goods_number,
+          goods_weight: form.goods_weight,
+          goods_introduce: form.goods_introduce,
+          pics: form.pics,
+          attrs: form.attrs,
+        })
+        if (res.meta.status !== 200) {
+          return this.$message.error('修改商品失败！')
         }
-        this.$message.success('添加商品成功')
+        this.$message.success('修改商品成功')
         this.$router.push('/goods')
       })
     },

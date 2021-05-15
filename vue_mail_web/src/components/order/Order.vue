@@ -11,8 +11,8 @@
     <el-card>
       <el-row>
         <el-col :span="8">
-          <el-input placeholder="请输入内容">
-            <el-button slot="append" icon="el-icon-search"></el-button>
+          <el-input placeholder="请输入内容" v-model="queryInfo.query" clearable @clear="getOrderList">
+            <el-button slot="append" icon="el-icon-search" @click="getOrderList"></el-button>
           </el-input>
         </el-col>
       </el-row>
@@ -23,9 +23,7 @@
         <el-table-column label="订单价格" prop="order_price"></el-table-column>
         <el-table-column label="是否付款">
           <template slot-scope="scope">
-            <el-tag type="success" v-if="scope.row.pay_status === '1'"
-              >已付款</el-tag
-            >
+            <el-tag type="success" v-if="scope.row.pay_status === '1'">已付款</el-tag>
             <el-tag type="danger" v-else>未付款</el-tag>
           </template>
         </el-table-column>
@@ -37,18 +35,8 @@
         </el-table-column>
         <el-table-column label="操作">
           <template slot-scope="scope">
-            <el-button
-              type="primary"
-              icon="el-icon-edit"
-              size="mini"
-              @click="showAddDialogVisible"
-            ></el-button>
-            <el-button
-              size="mini"
-              type="success"
-              icon="el-icon-location"
-              @click="showProgressDialogVisible"
-            ></el-button>
+            <el-button type="primary" icon="el-icon-edit" size="mini" @click="showAddDialogVisible"></el-button>
+            <el-button size="mini" type="success" icon="el-icon-location" @click="showProgressDialogVisible"></el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -65,24 +53,10 @@
       </el-pagination>
     </el-card>
 
-    <el-dialog
-      title="修改地址"
-      :visible.sync="addDialogVisible"
-      width="50%"
-      @close="closeAddDialogVisible"
-    >
-      <el-form
-        :model="addForm"
-        :rules="addFormRules"
-        ref="addFormRef"
-        label-width="100px"
-      >
+    <el-dialog title="修改地址" :visible.sync="addDialogVisible" width="50%" @close="closeAddDialogVisible">
+      <el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="100px">
         <el-form-item label="省市区/县" prop="addres1">
-          <el-cascader
-            v-model="addForm.addres1"
-            :options="citydata"
-            :props="{ expandTrigger: 'hover' }"
-          ></el-cascader>
+          <el-cascader v-model="addForm.addres1" :options="citydata" :props="{ expandTrigger: 'hover' }"></el-cascader>
         </el-form-item>
         <el-form-item label="详细地址" prop="addres2">
           <el-input v-model="addForm.addres2"></el-input>
@@ -90,23 +64,13 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="addDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addDialogVisible = false"
-          >确 定</el-button
-        >
+        <el-button type="primary" @click="addDialogVisible = false">确 定</el-button>
       </span>
     </el-dialog>
 
-    <el-dialog
-      title="物流进度"
-      :visible.sync="progressDialogVisible"
-      width="50%"
-    >
+    <el-dialog title="物流进度" :visible.sync="progressDialogVisible" width="50%">
       <el-timeline>
-        <el-timeline-item
-          v-for="(activity, index) in progressInfo"
-          :key="index"
-          :timestamp="activity.time"
-        >
+        <el-timeline-item v-for="(activity, index) in progressInfo" :key="index" :timestamp="activity.time">
           {{ activity.context }}
         </el-timeline-item>
       </el-timeline>
@@ -137,9 +101,7 @@ export default {
       },
       addFormRules: {
         addres1: [{ required: true, message: '请选择地址', trigger: 'blur' }],
-        addres2: [
-          { required: true, message: '请输入详细地址', trigger: 'blur' },
-        ],
+        addres2: [{ required: true, message: '请输入详细地址', trigger: 'blur' }],
       },
       citydata,
       progressDialogVisible: false,
@@ -187,8 +149,7 @@ export default {
         {
           time: '2018-05-10 08:23:00',
           ftime: '2018-05-10 08:23:00',
-          context:
-            '[北京市]北京海淀育新小区营业点派件员 顺丰速运 95338正在为您派件',
+          context: '[北京市]北京海淀育新小区营业点派件员 顺丰速运 95338正在为您派件',
           location: '',
         },
         {
@@ -200,8 +161,7 @@ export default {
         {
           time: '2018-05-10 02:03:00',
           ftime: '2018-05-10 02:03:00',
-          context:
-            '快件在[北京顺义集散中心]已装车,准备发往 [北京海淀育新小区营业点]',
+          context: '快件在[北京顺义集散中心]已装车,准备发往 [北京海淀育新小区营业点]',
           location: '',
         },
         {
